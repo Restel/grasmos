@@ -4,7 +4,7 @@ library(tidyverse)
 
 # subtiWIKI
 
-df_subti = read.csv("/data_source/Subtiwiki.csv")
+df_subti = read.csv("data_source/Subtiwiki.csv")
 df_subti <- select(df_subti, regulator.name, mode, gene.name)  %>%
           filter(!mode%in% c("[wiki|RNA switch]", 
                              "indirect effect",
@@ -44,15 +44,16 @@ df_subti = df_subti %>% mutate(mode = plyr::revalue(mode, c("activation "= "acti
                          )
 df_subti$id = paste0(df_subti$source,df_subti$target,df_subti$mode)
 df_subti = df_subti[!duplicated(df_subti$id),]
-write.csv(df_subti, file = "/data_clean/df_subti.csv", row.names = FALSE)
+df_subti = select(df_subti, -c(id))
+write.csv(df_subti, file = "data/real/df_subti.csv", row.names = FALSE)
 
 #### REGULON
 
-df_regulon = read.delim("/data_source/network_tf_gene.txt", skip = 37, header = FALSE)
+df_regulon = read.delim("data_source/network_tf_gene.txt", skip = 38, header = FALSE)
 
-df_regulon <- df_regulon %>% select(V2, V4, V5)
+df_regulon <- df_regulon %>% select(V2, V5, V6)
 df_regulon <- df_regulon %>% 
-              dplyr::rename(source = V2, target = V4, mode = V5) %>%
+              dplyr::rename(source = V2, target = V5, mode = V6) %>%
               mutate(mode = plyr::revalue(mode, c("-"= "repression", "+" = "activation","?" = "unknown"))) %>%
               mutate(source = sapply(source, function(s) {
                                                   first_letter = tolower(substr(s, 1, 1)) 
@@ -63,4 +64,4 @@ df_regulon$source[df_regulon$source == 'CRP']='crp'
 df_regulon$id = paste0(df_regulon$source,df_regulon$target)
 df_regulon = df_regulon[!duplicated(df_regulon$id)&!duplicated(df_regulon$id, fromLast = TRUE),]
 df_regulon = select(df_regulon, -c(id))
-write.csv(df_regulon, file = "/data/df_regulon.csv", row.names = FALSE)
+write.csv(df_regulon, file = "data/real/df_regulon.csv", row.names = FALSE)
